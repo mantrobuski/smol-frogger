@@ -21,6 +21,7 @@ let water1 = [], water2 = [], water3 = []; //bool
 
 //bigger is actually slower
 let vcar1 = 17; vcar2 = 13; vcar3 = 10; //int
+let vwater1 = 8; vwater2 = 7; vwater3 = 10; //int
 
 //8x9 grid, grid squares are 8x12 pixels
 
@@ -29,17 +30,11 @@ initialize();
 
 //sets the game to random setup initially
 function initialize()
-{
-	framecount = 0;
-	time = maxTime;
-	endScreen = false;
-	score = 0;
-	farthestY = 0;
-
-	x = 4; y = 8;
-
+{	
+	respawn();
 
 	//cars
+
 
 	//2 wide padding on each side so a car can spawn off screen
 	for(var i = 0; i < 12; i++)
@@ -72,7 +67,75 @@ function initialize()
 
 	//water
 
-	//for....
+	//3 wide padding cause biggest log will be 3 wide
+	//screen starts at i = 3 for lanes 1 and 3, i = 0 for lane 2
+	for(var i = 0; i < 14; i++)
+	{
+		//lane 1, 2 wide log, very high chance to spawn
+		if(i % 2 == 0)
+		{
+			if(Math.random() < 0.6)
+			{
+				water1[i] = true;
+				water1[i + 1] = true;
+			}
+
+			else
+			{
+				water1[i] = false;
+				water1[i + 1] = false;
+			}
+		}
+
+		//lane 2, 2 wide turtle
+		if(i % 2 == 0)
+		{
+			if(Math.random() < 0.3)
+			{
+				water2[i] = true;
+				water2[i + 1] = true;
+			}
+
+			else
+			{
+				water2[i] = false;
+				water2[i + 1] = false;
+			}
+		}
+
+		//lane 3, 3 wide log
+		if(i % 4 == 0)
+		{
+			if(Math.random() < 0.125)
+			{
+				water3[i] = true;
+				water3[i + 1] = true;
+				water3[i + 2] = true;
+				water3[i + 3] = true;
+			}
+
+			else
+			{
+				water3[i] = false;
+				water3[i + 1] = false;
+				water3[i + 2] = false;
+				water3[i + 3] = false;
+			}
+		}
+	}
+	
+}
+
+//after death
+function respawn()
+{
+	framecount = 0;
+	time = maxTime;
+	endScreen = false;
+	score = 0;
+	farthestY = 0;
+
+	x = 4; y = 8;
 }
 
 function draw()
@@ -88,8 +151,8 @@ function draw()
 		
 		background();
 		drawCars();
+		drawWater();
 		timeScore();
-		//drawWater();
 		// ?frog();
 
 		//red haze
@@ -109,6 +172,7 @@ function draw()
 
 	checkDeath();
 	moveCars();
+	moveWater(); //also moves frog here
 
 	if((8 - y) > farthestY)
 	{
@@ -121,6 +185,7 @@ function draw()
 
 	background();
 	drawCars();
+	drawWater();
 	frog();
 	timeScore();
 	
@@ -133,15 +198,17 @@ function checkDeath()
 {
 	let dead = false;
 
+	if(x > 7 || x < 0) dead = true;
+
 	//cars
 	if(y >= 5 && y <= 7)
 	{
 		//x+2 because of off screen car padding
-		if(y == 5 && car3[x]) dead = true;
+		if(y == 5 && car3[x+2]) dead = true;
 	
 		else if(y == 6 && car2[x]) dead = true;
 
-		else if(y == 7 && car1[x]) dead = true;
+		else if(y == 7 && car1[x+2]) dead = true;
 	}
 
 	//don't check rest of function if already dead, doesn't matter
@@ -150,7 +217,20 @@ function checkDeath()
 	else
 	{
 
+		//water
+		if(y >= 1 && y <= 3)
+		{
+			console.log('hi00');
+			//x+2 because of off screen car padding
+			if(y == 1 && water3[x+2] != true) dead = true;
+		
+			else if(y == 2 && !water2[x]) dead = true;
+
+			else if(y == 3 && !water1[x+2]) dead = true;
+		}
 	}
+
+	if(dead) death();
 	
 }
 
@@ -158,7 +238,7 @@ function checkDeath()
 function death()
 {
 	endScreen = true;
-
+	if(score > highScore) highScore = score;
 
 	// ? initialize();
 }
@@ -200,6 +280,63 @@ function moveCars()
 		{
 			car3[0] = true;
 			car3[1] = true;
+		}
+	}
+}
+
+//handles Water movement and also spawns new ones and moves frog
+function moveWater()
+{
+	//this gets called at 50Hz. will use frameCount in ATTiny.
+
+	if(framecount % vwater1 == 0)
+	{
+		if(y == 3) x += 1;
+
+		//shift one over
+		water1.unshift(false);
+		water1.pop();
+
+		//two wide gap minimum between logs
+		if(water1[0] == false && water1[2] == false && Math.random() < 0.8) 
+		{
+			water1[0] = true;
+			water1[1] = true;
+		}
+	}
+
+	if(framecount % vwater2 == 0)
+	{
+		if(y == 2) x -= 1;
+
+		//shift one over (other way though)
+		water2.push(false);
+		water2.shift();
+
+		//won't spawn two cars right next to each other
+		//two wide gap minimum between logs
+		if(water2[water2.length - 1] == false && water2[water2.length - 3] == false && Math.random() < 0.3) 
+		{
+			water2[water2.length - 1] = true;
+			water2[water2.length - 2] = true;
+		}
+	}
+
+	if(framecount % vwater3 == 0)
+	{	
+		if(y == 1) x += 1;
+
+		//shift one over
+		water3.unshift(false);
+		water3.pop();
+
+		//won't spawn two cars right next to each other, since it's two-wide gotta check one spot over extra
+		if(water3[4] == false && Math.random() < 0.125) 
+		{
+			water3[0] = true;
+			water3[1] = true;
+			water3[2] = true;
+			water3[3] = true;
 		}
 	}
 }
@@ -261,9 +398,9 @@ function drawCars()
 
 	ctx.fillStyle = 'yellow';
 	//lane 1
-	for(var i = 0; i < car1.length; i++)
+	for(var i = 2; i < car1.length; i++)
 	{
-		if(car1[i]) ctx.fillRect(i*8, 85, 8, 11);
+		if(car1[i]) ctx.fillRect((i-2)*8, 85, 8, 11);
 	}
 
 	//lane 2
@@ -273,9 +410,32 @@ function drawCars()
 	}
 
 	//lane 3 THIS WILL CHANGE WITH DIFFERENT DRAWINGS
-	for(var i = 0; i < car1.length; i++)
+	for(var i = 2; i < car1.length; i++)
 	{
-		if(car3[i]) ctx.fillRect(i*8, 61, 8, 11);
+		if(car3[i]) ctx.fillRect((i-2)*8, 61, 8, 11);
+	}
+}
+
+//display water
+function drawWater()
+{
+	ctx.fillStyle = 'brown';
+	//lane 1
+	for(var i = 2; i < water1.length; i++)
+	{
+		if(water1[i]) ctx.fillRect((i-2)*8, 37, 8, 11);
+	}
+
+	//lane 2
+	for(var i = 0; i < water2.length; i++)
+	{
+		if(water2[i]) ctx.fillRect(i*8, 25, 8, 11);
+	}
+
+	//lane 3 THIS WILL CHANGE WITH DIFFERENT DRAWINGS
+	for(var i = 2; i < water1.length; i++)
+	{
+		if(water3[i]) ctx.fillRect((i-2)*8, 13, 8, 11);
 	}
 }
 
@@ -300,13 +460,14 @@ function keyDownHandler(e)
 {
 	if(e.key == 'Up' || e.key == 'ArrowUp' || e.key == 'w') y-=1;
 	else if(e.key == 'Down' || e.key == 'ArrowDown' || e.key == 's') y+=1;
-	else if(e.key == 'Left' || e.key == 'ArrowLeft' || e.key == 'a') x-=2;
-	else if(e.key == 'Right' || e.key == 'ArrowRight' || e.key == 'd') x+=2;
+	else if(e.key == 'Left' || e.key == 'ArrowLeft' || e.key == 'a') x-=1;
+	else if(e.key == 'Right' || e.key == 'ArrowRight' || e.key == 'd') x+=1;
 
 	if(x > 7) x = 7;
 	else if(x < 0) x = 0;
 	if(y > 8) y = 8;
 	else if(y < 0) y = 0;
 
-	if(endScreen) initialize();
+	//if dead, respawn
+	if(endScreen) respawn();
 }
