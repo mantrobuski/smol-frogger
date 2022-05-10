@@ -16,6 +16,7 @@ const car3Image = document.getElementById('car3');
 //const water1Image = document.getElementById('water1');
 //const water2Image = document.getElementById('water2');
 //const water3Image = document.getElementById('water3');
+//test
 
 
 
