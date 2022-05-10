@@ -13,12 +13,10 @@ const frogImage = document.getElementById('frog');
 const car1Image = document.getElementById('car1');
 const car2Image = document.getElementById('car2');
 const car3Image = document.getElementById('car3');
-//const water1Image = document.getElementById('water1');
-//const water2Image = document.getElementById('water2');
-//const water3Image = document.getElementById('water3');
-
-
-
+const water1Image = document.getElementById('water1');
+const water2Image = document.getElementById('water2');
+const water2_2Image = document.getElementById('water2_2');
+const water3Image = document.getElementById('water3');
 
 document.addEventListener("keydown", keyDownHandler, false);
 //document.addEventListener("keyup", keyUpHandler, false);
@@ -181,8 +179,13 @@ function draw()
 
 		ctx.fillStyle = 'black';
 		ctx.font = '16px Silkscreen';
-		ctx.fillText('SHIT', 16, 50);
-		ctx.fillText('ON', 20, 64);
+
+
+
+		//ctx.fillText('SHIT', 16, 50);
+		//ctx.fillText('ON', 20, 64);
+
+		ctx.fillText('DUMPSTERED', 0, 50);
 
 		//don't do the rest of the draw if dead
 		return;
@@ -420,33 +423,44 @@ function frog()
 	ctx.fillRect(x*8 + 6, y*12 + 9, 1, 1);
 	ctx.fillRect(x*8 + 7, y*12 + 8, 1, 3);
 	*/
+	let interp = null;
+	if(y == 3) interp = Math.floor(((framecount % vwater1) / vwater1) * 8);
+	else if(y == 2) interp = Math.floor(((framecount % vwater2) / vwater2) * 8);
+	else if(y == 1) interp = Math.floor(((framecount % vwater3) / vwater3) * 8);
 
-	ctx.drawImage(frogImage, x*8, y*12);
+	ctx.drawImage(frogImage, x*8 + (interp === null ? 0 : interp - 4) * (y == 2 ? -1 : 1), y*12);
 }
 
 //cars
 function drawCars()
 {
-	ctx.fillStyle = 'yellow';
+	//ctx.fillStyle = 'yellow';
+
+	//nudging everything by some interp amount of pixels. also nudge the drawing by 4 (inbetween 0-7) to average out this nudge cause the hit calc does not use these interp values.
+
 	//lane 1
+	let interp = Math.floor(((framecount % vcar1) / vcar1) * 8);
+	console.log(interp);
 	for(var i = 2; i < car1.length; i++)
 	{
 		//if(car1[i]) ctx.fillRect((i-2)*8, 85, 8, 11);
-		if(car1[i]) ctx.drawImage(car1Image, (i-2)*8, 84);
+		if(car1[i]) ctx.drawImage(car1Image, (i-2)*8 - 4 + interp, 84);
 	}
 
 	//lane 2
+	interp = Math.floor(((framecount % vcar2) / vcar2) * 8);
 	for(var i = 0; i < car2.length; i++)
 	{
 		//if(car2[i]) ctx.fillRect(i*8, 73, 8, 11);
-		if(car2[i]) ctx.drawImage(car2Image, i*8, 72);
+		if(car2[i]) ctx.drawImage(car2Image, i*8 + 4 - interp, 72);
 	}
 
 	//lane 3 THIS WILL CHANGE WITH DIFFERENT DRAWINGS
+	interp = Math.floor(((framecount % vcar3) / vcar3) * 8);
 	for(var i = 1; i < car1.length-1; i++)
 	{
 		//if(car3[i]) ctx.fillRect((i-2)*8, 61, 8, 11);
-		if(car3[i] && !car3[i-1]) ctx.drawImage(car3Image, (i-2)*8, 60);
+		if(car3[i] && !car3[i-1]) ctx.drawImage(car3Image, (i-2)*8 - 4 + interp, 60);
 	}
 
 
@@ -455,23 +469,37 @@ function drawCars()
 //display water
 function drawWater()
 {
-	ctx.fillStyle = 'brown';
+	//ctx.fillStyle = 'brown';
+
 	//lane 1
-	for(var i = 2; i < water1.length; i++)
+	let interp = Math.floor(((framecount % vwater1) / vwater1) * 8);
+	for(var i = 1; i < water1.length; i++)
 	{
-		if(water1[i]) ctx.fillRect((i-2)*8, 37, 8, 11);
+		//if(water1[i]) ctx.fillRect((i-2)*8, 37, 8, 11);
+		if(water1[i] && !water1[i-1]) ctx.drawImage(water1Image, (i-2)*8 - 4 + interp, 36);
 	}
 
 	//lane 2
+	interp = Math.floor(((framecount % vwater2) / vwater2) * 8);
 	for(var i = 0; i < water2.length; i++)
 	{
-		if(water2[i]) ctx.fillRect(i*8, 25, 8, 11);
+		//if(water2[i]) ctx.fillRect(i*8, 25, 8, 11);
+		if(water2[i]) 
+		{
+			//half the time do one animation, half the time do the other frame, based on movement speed
+			if((framecount % 50) > 50/2) ctx.drawImage(water2Image, i*8 + 4 - interp, 24);
+			else ctx.drawImage(water2_2Image, i*8 + 4 - interp, 24);
+		}
 	}
 
+
 	//lane 3 THIS WILL CHANGE WITH DIFFERENT DRAWINGS
-	for(var i = 2; i < water1.length; i++)
+	interp = Math.floor(((framecount % vwater3) / vwater3) * 8);
+	for(var i = 1; i < water1.length; i++)
 	{
-		if(water3[i]) ctx.fillRect((i-2)*8, 13, 8, 11);
+		//if(water3[i]) ctx.fillRect((i-2)*8, 13, 8, 11);
+		if(water3[i] && !water3[i-1]) ctx.drawImage(water3Image, (i-2)*8 - 4 + interp, 12);
+
 	}
 }
 
