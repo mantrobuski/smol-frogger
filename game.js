@@ -1,19 +1,35 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+//turn off anti-ailiasing
+ctx.webkitImageSmoothingEnabled = false;
+ctx.mozImageSmoothingEnabled = false;
+ctx.imageSmoothingEnabled = false;
 const framerate = 1000.0/(50.0); //change the denom to whatever framerate you want
+
+
+//images
+const backgroundImage = document.getElementById('background');
+const frogImage = document.getElementById('frog');
+const car1Image = document.getElementById('car1');
+const car2Image = document.getElementById('car2');
+const car3Image = document.getElementById('car3');
+
+
 
 document.addEventListener("keydown", keyDownHandler, false);
 //document.addEventListener("keyup", keyUpHandler, false);
 
+
+//game variables, I'm using type b/c ATTiny is based on C
 const maxTime = 1000; //int
 let time; //int
-let framecount;
-let endScreen;
-let score;
-let highScore = 50;
+let framecount; //int
+let endScreen; //bool
+let score; //int
+let highScore = 50; //int
 
 let x = 4; y = 8; //int
-let farthestY;
+let farthestY; //int
 
 //these are seperate and not 2D arrays cause they move at different speeds and the middle slice is different from  the edge ones
 let car1 = [], car2 = [], car3 = []; //bool
@@ -345,6 +361,7 @@ function moveWater()
 //drawing the background
 function background()
 {
+	/*
 	//top middle end
 	ctx.fillStyle = 'green';
 	ctx.fillRect(0, 96, 64, 12);
@@ -358,11 +375,21 @@ function background()
 	//water
 	ctx.fillStyle = 'blue';
 	ctx.fillRect(0, 12, 64, 36);
+	*/
+
+	//the image file is one slice, scales it up and tiles it across the width of the screen
+	for(var i = 0; i < canvas.width/8; i++)
+	{
+		ctx.drawImage(backgroundImage, i*8, 0, backgroundImage.width * 8, backgroundImage.height*12);
+	}
+	
+
 }
 
 //drawing frog
 function frog()
 {
+	/*
 	ctx.fillStyle = 'red';
 	//ctx.fillRect(x*8 + 1, y*12 + 1, 6, 10);
 
@@ -388,32 +415,37 @@ function frog()
 	ctx.fillRect(x*8, y*12 + 8, 1, 3);
 	ctx.fillRect(x*8 + 6, y*12 + 9, 1, 1);
 	ctx.fillRect(x*8 + 7, y*12 + 8, 1, 3);
-	
+	*/
+
+	ctx.drawImage(frogImage, x*8, y*12);
 }
 
 //cars
 function drawCars()
 {
-	//pad one pixel on the y axis
-
 	ctx.fillStyle = 'yellow';
 	//lane 1
 	for(var i = 2; i < car1.length; i++)
 	{
-		if(car1[i]) ctx.fillRect((i-2)*8, 85, 8, 11);
+		//if(car1[i]) ctx.fillRect((i-2)*8, 85, 8, 11);
+		if(car1[i]) ctx.drawImage(car1Image, (i-2)*8, 84);
 	}
 
 	//lane 2
 	for(var i = 0; i < car2.length; i++)
 	{
-		if(car2[i]) ctx.fillRect(i*8, 73, 8, 11);
+		//if(car2[i]) ctx.fillRect(i*8, 73, 8, 11);
+		if(car2[i]) ctx.drawImage(car2Image, i*8, 72);
 	}
 
 	//lane 3 THIS WILL CHANGE WITH DIFFERENT DRAWINGS
-	for(var i = 2; i < car1.length; i++)
+	for(var i = 1; i < car1.length-1; i++)
 	{
-		if(car3[i]) ctx.fillRect((i-2)*8, 61, 8, 11);
+		//if(car3[i]) ctx.fillRect((i-2)*8, 61, 8, 11);
+		if(car3[i] && !car3[i-1]) ctx.drawImage(car3Image, (i-2)*8, 60);
 	}
+
+
 }
 
 //display water
