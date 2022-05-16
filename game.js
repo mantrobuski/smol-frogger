@@ -29,6 +29,7 @@ let framecount; //int
 let endScreen; //bool
 let score; //int
 let highScore = 50; //int
+let message = 0; //message
 
 let x = 4; y = 8; //int
 let farthestY; //int
@@ -154,6 +155,8 @@ function respawn()
 	farthestY = 0;
 
 	x = 4; y = 8;
+
+	message = Math.floor(Math.random() * 7);
 }
 
 function draw()
@@ -177,15 +180,7 @@ function draw()
 		ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
 		ctx.fillRect(0, 0, 64, 128);
 
-		ctx.fillStyle = 'black';
-		ctx.font = '16px Silkscreen';
-
-
-
-		//ctx.fillText('SHIT', 16, 50);
-		//ctx.fillText('ON', 20, 64);
-
-		ctx.fillText('DUMPSTERED', 0, 50);
+		deathMessage(message);
 
 		//don't do the rest of the draw if dead
 		return;
@@ -518,6 +513,53 @@ function timeScore()
 
 	ctx.font = '10px Silkscreen';
 	ctx.fillText(score + ' HI: ' + highScore, 0, 128);
+}
+
+//random death message
+function deathMessage(x)
+{
+	ctx.fillStyle = 'black';
+	switch(x)
+	{
+		case 0:
+			ctx.font = '16px Silkscreen';
+			ctx.fillText('SHIT', 16, 50);
+			ctx.fillText('ON', 20, 64);
+			break;
+
+		case 1:
+			ctx.font = '16px Silkscreen';
+			ctx.fillText('DUMP', 10, 50);
+			ctx.fillText('STERED', 2, 64);
+			break;
+
+		case 2:
+			ctx.font = '16px Silkscreen';
+			ctx.fillText('SKILL', 10, 50);
+			ctx.fillText('ISSUE', 9, 64);
+			break;
+
+		case 3:
+			ctx.font = '20px Silkscreen';
+			ctx.fillText('BAD', 12, 50);
+			break;
+
+		case 4:
+			ctx.font = '16px Silkscreen';
+			ctx.fillText('WEAK', 10, 50);
+			break;
+
+		case 5:
+			ctx.font = '16px Silkscreen';
+			ctx.fillText('YOU', 15, 50);
+			ctx.fillText('DIED', 15, 64);
+			break;
+
+		case 6:
+			ctx.font = '20px Silkscreen';
+			ctx.fillText('???', 12, 50);
+			break;
+	}
 }
 
 function keyDownHandler(e)
